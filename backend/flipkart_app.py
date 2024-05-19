@@ -4,10 +4,9 @@ import uvicorn
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
+import requests
 
 app = FastAPI()
-
-
 
 custom_headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
@@ -26,18 +25,18 @@ custom_headers = {
     "Upgrade-Insecure-Requests": "1",
 }
 
-options = webdriver.ChromeOptions()
-options.add_argument('--no-sandbox')
-options.add_argument('--headless')
-options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--user-agent={Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36}')
-driver = webdriver.Chrome(options=options)
-driver.set_page_load_timeout(90)
+# options = webdriver.ChromeOptions()
+# options.add_argument('--no-sandbox')
+# options.add_argument('--headless')
+# options.add_argument('--disable-dev-shm-usage')
+# options.add_argument('--user-agent={Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36}')
+# driver = webdriver.Chrome(options=options)
+# driver.set_page_load_timeout(90)
 
 
-def set_headers(url: str):
-    driver.get(url)
-    driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {'headers': custom_headers})
+# def set_headers(url: str):
+#     driver.get(url)
+#     driver.execute_cdp_cmd('Network.setExtraHTTPHeaders', {'headers': custom_headers})
 
 def scrape_products(search: str, page_num: str):
     title = []
@@ -49,9 +48,10 @@ def scrape_products(search: str, page_num: str):
     cut_price = []
     cut_price_off = []
     product_data = []
-    set_headers(url = f"https://www.flipkart.com/search?q={search}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off&page={page_num}")
-    html = driver.page_source
-    soup = BeautifulSoup(html, "lxml")
+
+    url = f"https://www.flipkart.com/search?q={search}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off&page={page_num}"
+    response = requests.get(url = url, headers=custom_headers)
+    soup = BeautifulSoup(response.text, "lxml")
     box = soup.find("div", "DOjaWF gdgoEp")
 
     if box:
